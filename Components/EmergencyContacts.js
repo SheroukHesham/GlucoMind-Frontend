@@ -12,11 +12,11 @@ import {
 const {width} = Dimensions.get('window');
 const CARD_HEIGHT = 160;
 
-export default function EmergencyContacts() {
-  const [contacts, setContacts] = useState([]);
+export default function EmergencyContacts({ contacts, setContacts }) {
   const [editingIndex, setEditingIndex] = useState(null);
 
   const handleAddContact = () => {
+
     const newContact = {
       id: Date.now(),
       name: '',
