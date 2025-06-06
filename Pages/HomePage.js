@@ -1,7 +1,8 @@
 // /* eslint-disable react-native/no-inline-styles */
+// // /* eslint-disable react-native/no-inline-styles */
 // import React, {useState} from 'react';
 // import {View, Text, TouchableOpacity, ScrollView, FlatList} from 'react-native';
-// import {LineChart} from 'react-native-chart-kit';
+// // import {LineChart} from 'react-native-chart-kit';
 // import Card from '../Components/HomePageCard';
 // import Button from '../Components/HomePageButton';
 // import {Menu, MenuItem} from 'react-native-material-menu';
@@ -107,7 +108,7 @@
 //         </View>
 
 //         {/* Glucose Graph */}
-//         <LineChart
+//         {/* <LineChart
 //           data={{
 //             labels:
 //               graphType === 'day'
@@ -131,7 +132,7 @@
 //             strokeWidth: 2,
 //           }}
 //           style={{marginVertical: 8, borderRadius: 16}}
-//         />
+//         /> */}
 //       </View>
 
 //       {/* Today's Meal Plan */}

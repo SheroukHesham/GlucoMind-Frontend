@@ -10,13 +10,16 @@ import React from 'react';
 import {SafeAreaView} from 'react-native';
 import RegistrationForm from './Pages/RegistrationForm';
 // import HomePage from './Pages/HomePage';
+import NewHome from './Pages/NewHome';
+import {NavigationContainer} from '@react-navigation/native';
+import MainNavigation from './navigation/MainNavigation';
 
 const App = () => {
   return (
-    <SafeAreaView>
-      <RegistrationForm />
-      {/* <HomePage /> */}
-    </SafeAreaView>
+    // <RegistrationForm />
+    <NavigationContainer>
+      <MainNavigation />
+    </NavigationContainer>
   );
 };
 
