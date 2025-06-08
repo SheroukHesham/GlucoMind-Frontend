@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, {useState, useRef, useEffect} from 'react';
-import {View, Text, TouchableOpacity, FlatList} from 'react-native';
+import {View, Text, TouchableOpacity, FlatList, StyleSheet} from 'react-native';
 import styles from '../Styles/HomeMealContainerStyle';
 // import {AntDesign} from 'react-native-vector-icons'; // Make sure you have expo/vector-icons or react-native-vector-icons installed
 
@@ -36,7 +36,7 @@ const MEALS = [
   },
 ];
 
-const MealPlan = () => {
+const MealPlan = ({navigation, showButton}) => {
   const [favorites, setFavorites] = useState([]);
   const prevFavoritesRef = useRef([]);
 
@@ -92,29 +92,57 @@ const MealPlan = () => {
     prevFavoritesRef.current = favorites;
   }, [favorites]);
 
+  // TODO: on render get the user meals from the database
+
+  const handleGenerateNewPlan = () => {
+    // TODO: Trigger backend logic or script
+    console.log('Generate new meal plan');
+  };
+
   const renderMealCard = ({item}) => {
     const isFav = favorites.includes(item.name); // using name for favorites
 
     return (
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          {/* Title like "Breakfast" */}
-          <Text style={styles.mealTitle}>{item.title}</Text>
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate('Meal Details', {
+            meal: {
+              name: 'Salmon Bowl',
+              ingredients: [
+                {name: 'Salmon', quantity: '200g'},
+                {name: 'Brown Rice', quantity: '1 cup'},
+                {name: 'Spinach', quantity: '1/2 cup'},
+              ],
+              instructions: [
+                'Cook rice.',
+                'Grill salmon.',
+                'Assemble and serve.',
+              ],
+              totalTime: '30 minutes',
+              totalCalories: '450 kcal',
+            },
+          })
+        }>
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            {/* Title like "Breakfast" */}
+            <Text style={styles.mealTitle}>{item.title}</Text>
 
-          {/* Favorite heart button */}
-          <TouchableOpacity onPress={() => toggleFavorite(item.name)}>
-            <Text style={{fontSize: 24, color: isFav ? 'red' : '#aaa'}}>
-              {isFav ? '❤️' : '🤍'}
-            </Text>
-          </TouchableOpacity>
+            {/* Favorite heart button */}
+            <TouchableOpacity onPress={() => toggleFavorite(item.name)}>
+              <Text style={{fontSize: 24, color: isFav ? 'red' : '#aaa'}}>
+                {isFav ? '❤️' : '🤍'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Meal name like "Oatmeal with fruits" */}
+          <Text style={styles.mealName}>{item.name}</Text>
+
+          <Text style={styles.detailText}>Cook Time: {item.cookTime}</Text>
+          <Text style={styles.detailText}>Calories: {item.calories}</Text>
         </View>
-
-        {/* Meal name like "Oatmeal with fruits" */}
-        <Text style={styles.mealName}>{item.name}</Text>
-
-        <Text style={styles.detailText}>Cook Time: {item.cookTime}</Text>
-        <Text style={styles.detailText}>Calories: {item.calories}</Text>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -122,13 +150,41 @@ const MealPlan = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Today's Meal Plan</Text>
       <FlatList
+        scrollEnabled={false}
         data={MEALS}
         keyExtractor={item => item.id}
         renderItem={renderMealCard}
         contentContainerStyle={{paddingBottom: 20}}
       />
+
+      {showButton && (
+        <TouchableOpacity
+          style={localStyles.generateButton}
+          onPress={handleGenerateNewPlan}>
+          <Text style={localStyles.generateButtonText}>Generate New Plan</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
+
+const localStyles = StyleSheet.create({
+  bottomButtonContainer: {
+    alignItems: 'center',
+    marginTop: 30,
+  },
+  generateButton: {
+    backgroundColor: '#0f9013',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 12,
+  },
+  generateButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+});
 
 export default MealPlan;

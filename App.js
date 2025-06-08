@@ -8,9 +8,9 @@
 import React from 'react';
 
 import {SafeAreaView} from 'react-native';
-import RegistrationForm from './Pages/RegistrationForm';
+import RegistrationForm from './Screens/RegistrationForm';
 // import HomePage from './Pages/HomePage';
-import NewHome from './Pages/NewHome';
+import NewHome from './Screens/NewHome';
 import {NavigationContainer} from '@react-navigation/native';
 import MainNavigation from './navigation/MainNavigation';
 

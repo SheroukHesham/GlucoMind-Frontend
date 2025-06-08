@@ -28,7 +28,11 @@ export default function Header({navigation, initials}) {
         <TouchableOpacity
           style={styles.userCircle}
           onPress={() => {
-            navigation.navigate('Drawer', {screen: 'Logout'});
+            navigation.navigate(
+              'Drawer',
+              {screen: 'Manage Account'},
+              {reloadKey: Date.now()},
+            );
           }}>
           <Text style={styles.userInitials}>{initials}</Text>
         </TouchableOpacity>

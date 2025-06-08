@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import styles from '../Styles/GlucoseReadingStyle';
+
 const GlucoseReading = ({
   glucoseReading,
   trend,
@@ -9,7 +10,8 @@ const GlucoseReading = ({
   lowestReading,
 }) => {
   const getBorderColor = value => {
-    if (value < 100) return '#4CAF50'; // green
+    // TODO: put actual ranges
+    if (value > 80 && value < 120) return '#4CAF50'; // green
     if (value < 140) return '#FFC107'; // yellow
     return '#F44336'; // red
   };

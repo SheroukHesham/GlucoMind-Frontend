@@ -4,16 +4,10 @@ import {View, Text, StyleSheet, FlatList, TouchableOpacity} from 'react-native';
 
 import styles from '../Styles/HomeMedicationCard';
 
-// TODO: Replace with real backend data
-const MEDICATIONS = [
-  {id: '1', name: 'Metformin', time: '8:00 AM'},
-  {id: '2', name: 'Insulin (Lantus)', time: '12:00 PM'},
-  {id: '3', name: 'Atorvastatin', time: '9:00 PM'},
-];
-
-const MedicationIntake = () => {
+const MedicationIntake = ({showButton, edit, setEdit, medications}) => {
   const [takenMeds, setTakenMeds] = useState([]);
   const prevTakenRef = useRef([]);
+  const MEDICATIONS = medications;
 
   const toggleTaken = medName => {
     setTakenMeds(prev =>
@@ -51,6 +45,14 @@ const MedicationIntake = () => {
     prevTakenRef.current = takenMeds;
   }, [takenMeds]);
 
+  const handleEdit = () => {
+    // TODO: set the boolean to true to show the edit view
+    setEdit(true);
+    // TODO: Trigger backend logic or script
+
+    console.log('Editing');
+  };
+
   const renderMedCard = ({item}) => {
     const isTaken = takenMeds.includes(item.name);
 
@@ -73,13 +75,41 @@ const MedicationIntake = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Medication Intake</Text>
       <FlatList
+        scrollEnabled={false}
         data={MEDICATIONS}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item.name}
         renderItem={renderMedCard}
         contentContainerStyle={{paddingBottom: 20}}
       />
+      {/* Add an optional edit button */}
+      {showButton && (
+        <TouchableOpacity
+          style={localStyles.generateButton}
+          onPress={handleEdit}>
+          <Text style={localStyles.generateButtonText}>Edit Medications</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
+
+const localStyles = StyleSheet.create({
+  bottomButtonContainer: {
+    alignItems: 'center',
+    marginTop: 30,
+  },
+  generateButton: {
+    backgroundColor: '#0f9013',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 12,
+  },
+  generateButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+});
 
 export default MedicationIntake;
