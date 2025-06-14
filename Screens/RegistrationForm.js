@@ -2,6 +2,7 @@
 // App.tsx or RegistrationForm.tsx
 
 import React, {useState, useEffect} from 'react';
+import {useUser} from '../contexts/userContext';
 import {
   ScrollView,
   Text,
@@ -14,6 +15,7 @@ import {
 import styles from '../Styles/RegistrationStylesheet';
 import EmergencyContacts from '../Components/EmergencyContacts';
 import MedicationSection from '../Components/EditMedicationSection';
+import messaging from '@react-native-firebase/messaging';
 
 // TODO: Change the food items to a more comprehensive list
 const foodItems = ['Pizza', 'Salad', 'Burger', 'Fish', 'Pasta', 'Others'];
@@ -69,6 +71,8 @@ const RegistrationForm = ({navigation}) => {
   const [medicationTime, setMedicationTime] = useState({});
 
   const [errors, setErrors] = useState({});
+
+  const {fcmToken} = useUser();
 
   useEffect(() => {
     let updatedErrors = {...errors};
@@ -293,20 +297,19 @@ const RegistrationForm = ({navigation}) => {
         name: contact.name,
         phone: contact.phone,
         email: contact.email,
-        fcmTokens: [], // Optional: you can collect these later if needed
+        fcmTokens: [],
       })),
       medications: medications.map(med => ({
-        id: med.id || Date.now().toString(), // Generate ID if not present
+        id: med.id || Date.now().toString(),
         name: med.name,
         time: med.time,
-        frequency: med.frequency, // Optional: you may need to extend schema to support this
+        frequency: med.frequency,
       })),
       medicalConditions: medicalConditions,
-      fcmTokens: [], // Set later when device tokens are available
+      fcmTokens: fcmToken ? [fcmToken] : [],
     };
 
     try {
-      // TODO: CHANGE
       const response = await fetch('http://10.0.2.2:3001/register', {
         method: 'POST',
         headers: {
@@ -319,7 +322,6 @@ const RegistrationForm = ({navigation}) => {
 
       if (response.ok) {
         Alert.alert('Success', 'Registration completed!');
-        // Navigate to the Configure Sensor screen with user data
         navigation.navigate('Drawer', {
           screen: 'Configure Sensor',
           params: {user: result},

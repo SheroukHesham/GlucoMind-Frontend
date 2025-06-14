@@ -31,10 +31,6 @@ const GlucoseReading = ({
       alignSelf: 'center',
     };
 
-    // steady -> falling
-    //rising -> steady
-    //falling -> rising
-
     let rotation = '90deg'; // steady
 
     if (trend === 'rising') rotation = '360deg';

@@ -5,14 +5,22 @@ import MedicationIntake from '../Components/MedicationIntake';
 import Header from '../Components/Header';
 import styles from '../Styles/HomeStylesheet';
 import MedicationSection from '../Components/EditMedicationSection';
+import {useUser} from '../contexts/userContext';
 
-const MedicationsScreen = ({navigation}) => {
+const MedicationsScreen = ({navigation, route}) => {
+  const {user} = useUser();
+
+  const initials = user?.name
+    ? user.name
+        .split(' ')
+        .map(word => word[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase()
+    : 'AA';
+
   // TODO: Replace with real backend data
-  const MEDICATIONS = [
-    {id: '1', name: 'Metformin', time: '8:00 AM'},
-    {id: '2', name: 'Insulin (Lantus)', time: '12:00 PM'},
-    {id: '3', name: 'Atorvastatin', time: '9:00 PM'},
-  ];
+  const MEDICATIONS = user?.medications || [];
 
   const [edit, setEdit] = useState(false);
   const [focusedField, setFocusedField] = useState('');
@@ -22,7 +30,7 @@ const MedicationsScreen = ({navigation}) => {
 
   return (
     <ScrollView style={styles.header} nestedScrollEnabled={true}>
-      <Header navigation={navigation} initials={'AA'} />
+      <Header navigation={navigation} initials={initials} />
       {/* Show Medications to be taken only if edit is false */}
       {!edit && (
         <View style={{marginTop: 15}}>
@@ -31,6 +39,8 @@ const MedicationsScreen = ({navigation}) => {
             edit={edit}
             setEdit={setEdit}
             medications={medications}
+            user={user}
+            navigation={navigation}
           />
         </View>
       )}
@@ -38,6 +48,7 @@ const MedicationsScreen = ({navigation}) => {
       {edit && (
         <View style={styles.container}>
           <MedicationSection
+            userId={user._id}
             focusedField={focusedField}
             setFocusedField={setFocusedField}
             medications={medications}

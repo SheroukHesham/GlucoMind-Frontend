@@ -10,8 +10,11 @@ import {
   StyleSheet,
 } from 'react-native';
 import styles from '../Styles/RegistrationStylesheet';
+import * as AddCalendarEvent from 'react-native-add-calendar-event';
+import {PermissionsAndroid, Platform} from 'react-native';
 
 const MedicationSection = ({
+  userId,
   focusedField,
   setFocusedField,
   medications,
@@ -23,6 +26,13 @@ const MedicationSection = ({
   edit,
   setEdit,
 }) => {
+  const [originalMedications, setOriginalMedications] = React.useState([]);
+
+  React.useEffect(() => {
+    setOriginalMedications(medications);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [medications]);
+
   const onChangeField = (list, setList, index, value) => {
     const updated = [...list];
     updated[index] = value;
@@ -58,34 +68,153 @@ const MedicationSection = ({
     removeItem(medications, setMedications, index);
   };
 
-  // TODO: UNCOMMENT DURING INTEGRATION
+  // request calendar permissions on Android
+  const requestCalendarPermission = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_CALENDAR,
+          {
+            title: 'Calendar Permission',
+            message:
+              'GlucoMind needs access to your calendar to set medication reminders.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          },
+        );
+        const grantedRead = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_CALENDAR,
+          {
+            title: 'Calendar Permission',
+            message:
+              'GlucoMind needs access to your calendar to set medication reminders.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          },
+        );
+        return (
+          granted === PermissionsAndroid.RESULTS.GRANTED &&
+          grantedRead === PermissionsAndroid.RESULTS.GRANTED
+        );
+      } catch (err) {
+        console.warn(err);
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // update user's medications in backend
   const handleSave = async () => {
-    // try {
-    // // Replace this URL with your actual backend endpoint
-    // const response = await fetch(
-    //   'http://<YOUR_BACKEND_URL>/medications/update',
-    //   {
-    //     method: 'PUT',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({medications}), // send the updated medications
-    //   },
-    // );
+    const hasPermission = await requestCalendarPermission();
+    if (!hasPermission) {
+      alert('Calendar permission is required to set reminders.');
+      return;
+    }
 
-    // const data = await response.json();
+    // Save new user medications to backend
+    try {
+      const response = await fetch(
+        `http://10.0.2.2:3001/user/${userId}/medications`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({medications}),
+        },
+      );
+      const data = await response.json();
+      if (response.ok) {
+        console.log('Medications saved successfully:', data);
+      } else {
+        console.error('Error saving medications:', data);
+        alert('Failed to save medications.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred while saving medications.');
+    }
 
-    // if (response.ok) {
-    //   console.log('Medications saved successfully:', data);
+    // Helper to compare medications (by name, time, frequency)
+    const medKey = med => `${med.name}|${med.time}|${med.frequency}`;
+    const originalMap = new Map();
+    originalMedications.forEach(med => {
+      originalMap.set(med.name, med);
+    });
+    const newMap = new Map();
+    medications.forEach(med => {
+      newMap.set(med.name, med);
+    });
+
+    // 1. Create or update events for new/updated medications
+    for (let i = 0; i < medications.length; i++) {
+      const med = medications[i];
+      if (!med.name || !med.time) {
+        continue;
+      }
+      const orig = originalMap.get(med.name);
+      const isNew = !orig;
+      const isUpdated = orig && medKey(orig) !== medKey(med);
+      if (isNew || isUpdated) {
+        // Parse hour and minute from time string (format: 'hh:mm')
+        const [hour, minute] = med.time.split(':').map(Number);
+        const now = new Date();
+        let eventDate = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+          hour,
+          minute,
+          0,
+        );
+        if (eventDate < now) {
+          eventDate.setDate(eventDate.getDate() + 1);
+        }
+        let recurrence;
+        if (med.frequency === 'daily') {
+          recurrence = 'daily';
+        } else if (med.frequency === 'weekly') {
+          recurrence = 'weekly';
+        } else if (med.frequency === 'monthly') {
+          recurrence = 'monthly';
+        }
+        const eventConfig = {
+          title: `Take Medication: ${med.name}`,
+          startDate: eventDate.toISOString(),
+          endDate: new Date(eventDate.getTime() + 30 * 60 * 1000).toISOString(),
+          notes: 'Medication reminder set by GlucoMind',
+          recurrence,
+        };
+        try {
+          await AddCalendarEvent.presentEventCreatingDialog(eventConfig);
+          console.log(
+            `Calendar event created/updated for medication: ${med.name}`,
+          );
+        } catch (e) {
+          console.error('Error creating/updating calendar event:', e);
+        }
+      }
+    }
+
+    // 2. Delete events for removed medications
+    for (let i = 0; i < originalMedications.length; i++) {
+      const orig = originalMedications[i];
+      if (!newMap.has(orig.name)) {
+        try {
+          // ask the user to manually delete the old calendar event as it is not supported by the library
+          console.log(
+            `Medication removed: ${orig.name}. Please delete the calendar event manually if needed.`,
+          );
+        } catch (e) {
+          console.error('Error deleting calendar event:', e);
+        }
+      }
+    }
+    setOriginalMedications(medications);
     setEdit(false); // close edit view
-    //   } else {
-    //     console.error('Error saving medications:', data);
-    //     alert('Failed to save medications.');
-    //   }
-    // } catch (error) {
-    //   console.error('Error:', error);
-    //   alert('An error occurred while saving medications.');
-    // }
   };
 
   return (
@@ -186,13 +315,13 @@ const MedicationSection = ({
                   const validHour =
                     t?.hour &&
                     /^\d{2}$/.test(t.hour) &&
-                    parseInt(t.hour) >= 0 &&
-                    parseInt(t.hour) <= 23;
+                    parseInt(t.hour, 10) >= 0 &&
+                    parseInt(t.hour, 10) <= 23;
                   const validMinute =
                     t?.minute &&
                     /^\d{2}$/.test(t.minute) &&
-                    parseInt(t.minute) >= 0 &&
-                    parseInt(t.minute) <= 59;
+                    parseInt(t.minute, 10) >= 0 &&
+                    parseInt(t.minute, 10) <= 59;
 
                   if (validHour && validMinute && t?.freq) {
                     const formattedTime = `${t.hour}:${t.minute}`;

@@ -12,8 +12,10 @@ import Header from '../Components/Header';
 import EmergencyContacts from '../Components/EmergencyContacts';
 import styles from '../Styles/ManageAccountStyle';
 import MealTags from '../Components/MealTags';
+import {useUser} from '../contexts/userContext';
 
 const ManageAccountScreen = ({navigation, route}) => {
+  const {user, setUser} = useUser();
   const {reloadKey} = route.params || {};
 
   const [name, setName] = useState('');
@@ -43,42 +45,76 @@ const ManageAccountScreen = ({navigation, route}) => {
 
   // Reset all fields whenever reloadKey changes (forces clean state)
   useEffect(() => {
-    setName('John Doe');
-    setAge('24');
-    setEmail('john@example.com');
-    setPassword('example123');
-    setDailyCalories('2000');
-    setContacts([
-      {
-        id: Date.now(),
-        name: 'Jane Doe',
-        phone: '123456789',
-        email: 'jane@example.com',
-        isNew: false,
-      },
-    ]);
-    setLikedMeals([
-      {id: 1, name: 'Chicken Salad'},
-      {id: 2, name: 'Grilled Fish'},
-      {id: 3, name: 'Oatmeal'},
-    ]);
-    setDislikedMeals([
-      {id: 1, name: 'Pasta'},
-      {id: 2, name: 'Meat'},
-      {id: 3, name: 'Toast'},
-    ]);
-    setDietaryRestrictions([
-      {id: 1, name: 'Low Sugar'},
-      {id: 2, name: 'No Dairy'},
-    ]);
-    setMedicalConditions([{id: 1, name: 'Type 2 Diabetes'}]);
+    setName(user.name || '');
+    setAge(user.age || '');
+    setEmail(user.email || '');
+    setPassword(user.password || '');
+    setDailyCalories(user.dailyCalories ? String(user.dailyCalories) : '');
+    setContacts(
+      user.emergencyContacts && user.emergencyContacts.length > 0
+        ? user.emergencyContacts.map((c, idx) => ({
+            id: idx + 1,
+            name: c.name || '',
+            phone: c.phone || '',
+            email: c.email || '',
+            isNew: false,
+          }))
+        : [
+            {
+              id: Date.now(),
+              name: '',
+              phone: '',
+              email: '',
+              isNew: false,
+            },
+          ],
+    );
+    setLikedMeals(
+      user.likedRecipes && user.likedRecipes.length > 0
+        ? user.likedRecipes.map((itemName, idx) => ({
+            id: idx + 1,
+            name: itemName,
+          }))
+        : [],
+    );
+    setDislikedMeals(
+      user.dislikedRecipes && user.dislikedRecipes.length > 0
+        ? user.dislikedRecipes.map((itemName, idx) => ({
+            id: idx + 1,
+            name: itemName,
+          }))
+        : [],
+    );
+    setDietaryRestrictions(
+      user.dietaryRestrictions && user.dietaryRestrictions.length > 0
+        ? user.dietaryRestrictions.map((itemName, idx) => ({
+            id: idx + 1,
+            name: itemName,
+          }))
+        : [],
+    );
+    setMedicalConditions(
+      user.medicalConditions && user.medicalConditions.length > 0
+        ? user.medicalConditions.map((itemName, idx) => ({
+            id: idx + 1,
+            name: itemName,
+          }))
+        : [],
+    );
     setEdit(false);
-  }, [reloadKey]);
-
-  const handleSave = () => {
-    Alert.alert('Success', 'Account information updated successfully!');
-    setEdit(false);
-  };
+  }, [
+    reloadKey,
+    user.name,
+    user.age,
+    user.email,
+    user.password,
+    user.dailyCalories,
+    user.emergencyContacts,
+    user.likedRecipes,
+    user.dislikedRecipes,
+    user.dietaryRestrictions,
+    user.medicalConditions,
+  ]);
 
   const validateAccountInfo = () => {
     let newErrors = {};
@@ -136,6 +172,49 @@ const ManageAccountScreen = ({navigation, route}) => {
       Alert.alert('Fill data', 'Ensure all data is filled before saving');
       return;
     }
+
+    // Build updated user object
+    const updatedUser = {
+      ...user,
+      name: name.trim(),
+      age: age.trim(),
+      email: email.trim(),
+      password: password.trim(),
+      dailyCalories: dailyCalories.trim(),
+      emergencyContacts: contacts.map(c => ({
+        name: c.name,
+        phone: c.phone,
+        email: c.email,
+      })),
+      likedRecipes: likedMeals.map(m => m.name),
+      dislikedRecipes: dislikedMeals.map(m => m.name),
+      dietaryRestrictions: dietaryRestrictions.map(m => m.name),
+      medicalConditions: medicalConditions.map(m => m.name),
+    };
+
+    try {
+      const response = await fetch(`http://10.0.2.2:3001/user/${user._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedUser),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setUser(data); // Update user context with new user data
+        console.log('User updated successfully:', data);
+      } else {
+        console.error('Error updating user:', data);
+        Alert.alert('Error', 'Failed to update user.');
+        return;
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'An error occurred while updating user.');
+      return;
+    }
+
     setEdit(false);
   };
 

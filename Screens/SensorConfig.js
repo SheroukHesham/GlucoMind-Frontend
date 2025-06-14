@@ -1,20 +1,55 @@
 /* eslint-disable react-native/no-inline-styles */
-import React from 'react';
-import {View, Text, Image, TouchableOpacity, Alert} from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-// or react-native-vector-icons/Ionicons
-import Clipboard from '@react-native-clipboard/clipboard';
+import React, {useState} from 'react';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  Alert,
+  TextInput,
+} from 'react-native';
 import styles from '../Styles/HomeStylesheet';
 import {ScrollView} from 'react-native-gesture-handler';
 import Header from '../Components/Header';
+import {useUser} from '../contexts/userContext';
+
 const ConfigureSensorScreen = ({navigation, route}) => {
-  // Assume userId passed via navigation params
+  const {user} = useUser();
+  const [sensorId, setSensorId] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const {user} = route.params;
-
-  const copyToClipboard = () => {
-    Clipboard.setString(user._id);
-    Alert.alert('Copied', 'User ID copied to clipboard');
+  const handleConnect = async () => {
+    if (!sensorId) {
+      Alert.alert('Error', 'Please enter your Sensor ID');
+      return;
+    }
+    setLoading(true);
+    try {
+      // Replace with your backend endpoint
+      const response = await fetch(
+        `http://10.0.2.2:3000/cgm/add-sensor/${user._id}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sensorId: sensorId,
+          }),
+        },
+      );
+      const data = await response.json();
+      if (response.ok) {
+        Alert.alert('Success', 'Sensor connected successfully!');
+        navigation.navigate('Drawer', {screen: 'Home'});
+      } else {
+        Alert.alert('Error', data.message || 'Failed to connect sensor');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -24,9 +59,7 @@ const ConfigureSensorScreen = ({navigation, route}) => {
         <Text style={[styles.sectionTitle, {textAlign: 'center'}]}>
           Configure Your Sensor
         </Text>
-
         <View style={{alignItems: 'center', marginVertical: 30}}>
-          {/* Replace with your sensor image */}
           <Image
             source={{
               uri: 'https://cdn-icons-png.flaticon.com/512/123/123864.png',
@@ -35,30 +68,38 @@ const ConfigureSensorScreen = ({navigation, route}) => {
             resizeMode="contain"
           />
         </View>
-
-        <View
+        <TextInput
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
             borderWidth: 1,
             borderColor: '#ccc',
             padding: 10,
             borderRadius: 8,
             marginBottom: 20,
-          }}>
-          <Text style={{flex: 1, fontSize: 16}}>{user._id}</Text>
-          <TouchableOpacity onPress={copyToClipboard} style={{padding: 5}}>
-            <Text style={{fontSize: 24}}>📋</Text>
-          </TouchableOpacity>
-        </View>
-
+            fontSize: 16,
+          }}
+          placeholder="Enter your Sensor ID"
+          value={sensorId}
+          onChangeText={setSensorId}
+          autoCapitalize="none"
+        />
+        <TouchableOpacity
+          style={[
+            styles.registerButton,
+            {backgroundColor: '#28a745', marginBottom: 20},
+          ]}
+          onPress={handleConnect}
+          disabled={loading}>
+          <Text style={styles.registerText}>
+            {loading ? 'Connecting...' : 'Connect'}
+          </Text>
+        </TouchableOpacity>
         <Text style={{fontSize: 16, lineHeight: 24}}>
-          Please copy the User ID above and follow these steps:
+          Please enter your Sensor ID and follow these steps:
         </Text>
         <Text style={{marginTop: 10, fontSize: 14, lineHeight: 22}}>
           1. Connect your phone to the sensor's WiFi network.{'\n'}
-          2. Enter your phone's user credentials and the User ID you copied on
-          the registration page.{'\n'}
+          2. Enter your phone's user credentials and the Sensor ID you entered
+          above on the registration page.{'\n'}
           3. After setup, reconnect your phone to your usual WiFi network.{'\n'}
           4. The sensor will now connect and sync with your phone.
         </Text>

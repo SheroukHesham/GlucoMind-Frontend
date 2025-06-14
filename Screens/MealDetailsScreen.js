@@ -11,43 +11,73 @@ import styles from '../Styles/MealPageStyle';
 import Header from '../Components/Header';
 
 const MealDetailsScreen = ({route, navigation}) => {
-  const {meal} = route.params;
+  const {meal, user} = route.params;
+  console.log(meal);
 
-  const [liked, setLiked] = useState(null); // null | true | false
+  const [liked, setLiked] = useState(null);
 
   const handleLike = () => setLiked(true);
   const handleDislike = () => setLiked(false);
 
-  // TODO: Toggle liked and disliked and useref to add and unadd them from back end on press
-  // same as like in homepage
+  const instructionSteps = meal.instructions
+    ? meal.instructions
+        .split('.')
+        .map(step => step.trim())
+        .filter(step => step.length > 0)
+    : [];
 
   return (
     <ScrollView style={{flex: 1}}>
       <Header navigation={navigation} initials={'AA'} />
 
       <View style={{padding: 20, paddingTop: 20}}>
-        <Text style={styles.title}>{meal.name}</Text>
+        <Text style={styles.title}>{meal.title || meal.name}</Text>
+
         <View style={styles.section}>
           <Text style={styles.heading}>🧂 Ingredients</Text>
-          {meal.ingredients.map((item, index) => (
-            <Text key={index} style={styles.text}>
-              • {item.name}: {item.quantity}
-            </Text>
-          ))}
+          {meal.items && meal.items.length > 0 ? (
+            meal.items.map((itemObj, index) => (
+              <Text key={index} style={styles.text}>
+                • {itemObj.item}{' '}
+                {itemObj.calories ? `(~${itemObj.calories} cal)` : ''}
+              </Text>
+            ))
+          ) : (
+            <Text style={styles.text}>No ingredients listed.</Text>
+          )}
         </View>
 
         <View style={styles.section}>
           <Text style={styles.heading}>👩‍🍳 Instructions</Text>
-          {meal.instructions.map((step, index) => (
-            <Text key={index} style={styles.text}>
-              {index + 1}. {step}
-            </Text>
-          ))}
+          {instructionSteps.length > 0 ? (
+            instructionSteps.map((step, index) => (
+              <Text key={index} style={styles.text}>
+                {index + 1}. {step}.
+              </Text>
+            ))
+          ) : (
+            <Text style={styles.text}>No instructions available.</Text>
+          )}
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.text}>⏱️ Cooking Time: {meal.totalTime}</Text>
-          <Text style={styles.text}>🔥 Calories: {meal.totalCalories}</Text>
+          <Text style={styles.heading}>🥤 Beverages</Text>
+          {meal.beverages && meal.beverages.length > 0 ? (
+            meal.beverages.map((bev, index) => (
+              <Text key={index} style={styles.text}>
+                • {bev}
+              </Text>
+            ))
+          ) : (
+            <Text style={styles.text}>None</Text>
+          )}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.text}>
+            ⏱️ Cooking Time: {meal.cookTime || 'N/A'}
+          </Text>
+          <Text style={styles.text}>🔥 Calories: {meal.calories || 0}</Text>
         </View>
 
         <View style={localStyles.bottomSection}>

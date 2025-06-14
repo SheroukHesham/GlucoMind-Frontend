@@ -2,10 +2,12 @@
 import React, {useState} from 'react';
 import {View, TextInput, Text, TouchableOpacity, Alert} from 'react-native';
 import styles from '../Styles/HomeStylesheet';
+import {useUser} from '../contexts/userContext';
 
 const LoginScreen = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const {setUser, fcmToken} = useUser();
 
   const validateEmail = email => {
     // Simple email regex validation
@@ -13,7 +15,7 @@ const LoginScreen = ({navigation}) => {
     return re.test(email);
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please enter both email and password');
       return;
@@ -23,9 +25,30 @@ const LoginScreen = ({navigation}) => {
       return;
     }
 
-    // TODO: Replace with real backend login logic
-    console.log('Login with', {email, password});
-    navigation.navigate('Drawer', {screen: 'Home'});
+    try {
+      const response = await fetch('http://10.0.2.2:3001/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({email, password, fcmToken}),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        Alert.alert('Success', 'Login successful!');
+        setUser(result);
+        navigation.navigate('Drawer', {
+          screen: 'Home',
+        });
+      } else {
+        Alert.alert('Error', result.message || 'Login failed.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      Alert.alert('Error', 'Could not connect to server.');
+    }
   };
 
   return (

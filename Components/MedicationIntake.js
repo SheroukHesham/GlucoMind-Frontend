@@ -1,10 +1,17 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, {useState, useRef, useEffect} from 'react';
 import {View, Text, StyleSheet, FlatList, TouchableOpacity} from 'react-native';
-
+import {useUser} from '../contexts/userContext';
 import styles from '../Styles/HomeMedicationCard';
 
-const MedicationIntake = ({showButton, edit, setEdit, medications}) => {
+const MedicationIntake = ({
+  showButton,
+  edit,
+  setEdit,
+  medications,
+  navigation,
+}) => {
+  const {user} = useUser();
   const [takenMeds, setTakenMeds] = useState([]);
   const prevTakenRef = useRef([]);
   const MEDICATIONS = medications;
@@ -73,7 +80,15 @@ const MedicationIntake = ({showButton, edit, setEdit, medications}) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Medication Intake</Text>
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate('Drawer', {
+            params: {user: user},
+            screen: 'Medications',
+          })
+        }>
+        <Text style={styles.title}>Medication Intake</Text>
+      </TouchableOpacity>
       <FlatList
         scrollEnabled={false}
         data={MEDICATIONS}

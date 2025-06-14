@@ -1,5 +1,6 @@
 import {createStackNavigator} from '@react-navigation/stack';
 import {createDrawerNavigator} from '@react-navigation/drawer';
+import {NavigationContainer} from '@react-navigation/native';
 import NewHome from '../Screens/NewHome';
 import RegistrationForm from '../Screens/RegistrationForm';
 import MealDetailsScreen from '../Screens/MealDetailsScreen';
@@ -15,7 +16,6 @@ const Drawer = createDrawerNavigator();
 
 // Drawer navigation used AFTER registration
 const MainMenuNavigation = () => {
-  // TODO: REMOVE INITIAL ROUTE NAME
   return (
     <Drawer.Navigator
       initialRouteName="Home"
@@ -58,7 +58,8 @@ const MainNavigation = () => {
   return (
     <Stack.Navigator
       screenOptions={{header: () => null, headerShown: false}}
-      initialRouteName="Drawer">
+      initialRouteName="Login">
+      <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="RegistrationForm" component={RegistrationForm} />
       <Stack.Screen name="Drawer" component={MainMenuNavigation} />
     </Stack.Navigator>
