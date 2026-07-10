@@ -9,7 +9,6 @@ import {
 } from '@/components/ui/radio';
 import {CircleIcon} from '@/components/ui/icon';
 import {IUser} from '../interfaces';
-import {useState} from 'react';
 
 interface IProps {
   user: IUser;

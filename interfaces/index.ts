@@ -19,7 +19,7 @@ export interface IUser {
   ];
   dietaryRestrictions: string[];
   dailyCalories: number;
-  medications: [{name: string; time: string}];
+  medications: [{name: string; time: string}] | [];
   likedRecipes: string[];
   dislikedRecipes: string[];
   medicalConditions: string[];

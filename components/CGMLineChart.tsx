@@ -8,9 +8,9 @@ interface ICgmData {
   timestamp: string[];
 }
 
-const CGMLineChart = (user: IUser) => {
-  const [cgmData, setCgmData] = useState<number[]>([]);
-  const [weekdata, setWeekdata] = useState<number[]>([]);
+const CGMLineChart = ({user}: {user: IUser}) => {
+  const [cgmData, setCgmData] = useState<ICgmData>();
+  const [weekdata, setWeekdata] = useState<ICgmData>();
   const [timeRange, setTimeRange] = useState<string>('day');
 
   useEffect(() => {
@@ -36,77 +36,81 @@ const CGMLineChart = (user: IUser) => {
     return () => clearInterval(interval);
   }, [user]);
 
-  const processedData = useMemo(() => {
-    const now = new Date();
-    if (timeRange === 'day') {
-      // Filter for last 24 hours, only valid glucoseLevels
-      const filtered = cgmData
-        .filter(entry => {
-          const t = new Date(entry.timestamp);
-          return (
-            typeof entry.glucoseLevels === 'number' &&
-            !isNaN(entry.glucoseLevels) &&
-            now - t <= 24 * 60 * 60 * 1000 &&
-            now - t >= 0
-          );
-        })
-        .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-      return filtered.map(entry => {
-        const date = new Date(entry.timestamp);
-        const label = date.getHours().toString().padStart(2, '0') + ':00';
-        const value = entry.glucoseLevels;
-        return {
-          label,
-          value,
-          dataPointText: `${value}${value < 70 || value > 180 ? ' ⚠' : ''}`,
-          dataPointTextStyle: {
-            color: value < 70 || value > 180 ? '#d32f2f' : '#333',
-            fontWeight: '600',
-          },
-        };
-      });
-    } else {
-      // Weekly: group by day, only valid glucoseLevels
-      const grouped = {};
-      weekdata.forEach(entry => {
-        if (
-          typeof entry.glucoseLevels !== 'number' ||
-          isNaN(entry.glucoseLevels)
-        ) {
-          return;
-        }
-        const d = new Date(entry.timestamp);
-        const label = d.toLocaleDateString('en-US', {weekday: 'short'});
-        if (!grouped[label]) {
-          grouped[label] = [];
-        }
-        grouped[label].push(entry.glucoseLevels);
-      });
-      return Object.entries(grouped)
-        .map(([label, values]) => {
-          if (!values.length) {
-            return null;
-          }
-          const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
-          return {
-            label,
-            value: Math.round(avg),
-            dataPointText: `${Math.round(avg)}${
-              avg < 70 || avg > 180 ? ' ⚠' : ''
-            }`,
-            dataPointTextStyle: {
-              color: avg < 70 || avg > 180 ? '#d32f2f' : '#333',
-              fontWeight: '600',
-            },
-          };
-        })
-        .filter(Boolean);
-    }
-  }, [cgmData, weekdata, timeRange]);
+  // const processedData = useMemo(() => {
+  //   const now = new Date();
+  //   if (timeRange === 'day') {
+  //     // Filter for last 24 hours, only valid glucoseLevels
+  //     const filtered = cgmData
+  //       .filter(entry => {
+  //         const t = new Date(entry.timestamp);
+  //         return (
+  //           typeof entry.glucoseLevels === 'number' &&
+  //           !isNaN(entry.glucoseLevels) &&
+  //           now - t <= 24 * 60 * 60 * 1000 &&
+  //           now - t >= 0
+  //         );
+  //       })
+  //       .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  //     return filtered.map(entry => {
+  //       const date = new Date(entry.timestamp);
+  //       const label = date.getHours().toString().padStart(2, '0') + ':00';
+  //       const value = entry.glucoseLevels;
+  //       return {
+  //         label,
+  //         value,
+  //         dataPointText: `${value}${value < 70 || value > 180 ? ' ⚠' : ''}`,
+  //         dataPointTextStyle: {
+  //           color: value < 70 || value > 180 ? '#d32f2f' : '#333',
+  //           fontWeight: '600',
+  //         },
+  //       };
+  //     });
+  //   } else {
+  //     // Weekly: group by day, only valid glucoseLevels
+  //     const grouped = {};
+  //     weekdata.forEach(entry => {
+  //       if (
+  //         typeof entry.glucoseLevels !== 'number' ||
+  //         isNaN(entry.glucoseLevels)
+  //       ) {
+  //         return;
+  //       }
+  //       const d = new Date(entry.timestamp);
+  //       const label = d.toLocaleDateString('en-US', {weekday: 'short'});
+  //       if (!grouped[label]) {
+  //         grouped[label] = [];
+  //       }
+  //       grouped[label].push(entry.glucoseLevels);
+  //     });
+  //     return Object.entries(grouped)
+  //       .map(([label, values]) => {
+  //         if (!values.length) {
+  //           return null;
+  //         }
+  //         const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
+  //         return {
+  //           label,
+  //           value: Math.round(avg),
+  //           dataPointText: `${Math.round(avg)}${
+  //             avg < 70 || avg > 180 ? ' ⚠' : ''
+  //           }`,
+  //           dataPointTextStyle: {
+  //             color: avg < 70 || avg > 180 ? '#d32f2f' : '#333',
+  //             fontWeight: '600',
+  //           },
+  //         };
+  //       })
+  //       .filter(Boolean);
+  //   }
+  // }, [cgmData, weekdata, timeRange]);
 
-  const allValues = processedData.map(p => p.value);
-  const maxY = allValues.length ? Math.max(...allValues) : 200;
-  const minY = allValues.length ? Math.min(...allValues) : 60;
+  // const allValues = processedData.map(p => p.value);
+  // const maxY = allValues.length ? Math.max(...allValues) : 200;
+  // const minY = allValues.length ? Math.min(...allValues) : 60;
+
+  const chartData = cgmData?.glucoseLevels.map(glucoseLevel => {
+    return {value: glucoseLevel};
+  });
 
   return (
     <View style={styles.container}>
@@ -148,7 +152,7 @@ const CGMLineChart = (user: IUser) => {
 
       <View style={{width: '100%'}}>
         <LineChart
-          data={processedData}
+          data={chartData}
           curved
           areaChart
           color="#d32f2f"
@@ -170,8 +174,8 @@ const CGMLineChart = (user: IUser) => {
           showScrollIndicator
           scrollToEnd={true}
           backgroundColor="#fff"
-          maxValue={Math.ceil((maxY + 20) / 10) * 10}
-          minValue={Math.floor((minY - 20) / 10) * 10}
+          // maxValue={Math.ceil((maxY + 20) / 10) * 10}
+          // minValue={Math.floor((minY - 20) / 10) * 10}
           width={200} // 32px padding on each side
         />
       </View>

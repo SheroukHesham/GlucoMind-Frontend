@@ -51,10 +51,10 @@ const NewHome = ({navigation}: INavigation) => {
   }, [user]);
 
   return (
-    <ScrollView className="">
-      <Header navigation={navigation} initials={initials} />
+    <ScrollView>
+      <Header navigation={navigation} initials={initials as string} />
       <View style={styles.container}>
-        <GlucoseReading glucoseReading={glucoseLevel} trend={trend} />
+        {/* <GlucoseReading glucoseReading={glucoseLevel} trend={trend} /> */}
         <MealPlan navigation={navigation} />
         <MedicationIntake
           showButton={false}

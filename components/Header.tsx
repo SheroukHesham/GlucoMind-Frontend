@@ -1,16 +1,14 @@
-import React, {useState} from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Modal,
-  StyleSheet,
-  Pressable,
-} from 'react-native';
+import React from 'react';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {INavigation} from '../interfaces';
+
+interface IProps extends INavigation {
+  initials: string;
+}
 
 // Header component
-export default function Header({navigation, initials}) {
+export default function Header({navigation, initials}: IProps) {
   return (
     <SafeAreaView>
       <View style={[styles.header]}>
@@ -28,11 +26,7 @@ export default function Header({navigation, initials}) {
         <TouchableOpacity
           style={styles.userCircle}
           onPress={() => {
-            navigation.navigate(
-              'Drawer',
-              {screen: 'Manage Account'},
-              {reloadKey: Date.now()},
-            );
+            navigation.navigate('Drawer', {screen: 'Manage Account'});
           }}>
           <Text style={styles.userInitials}>{initials}</Text>
         </TouchableOpacity>

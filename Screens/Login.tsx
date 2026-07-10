@@ -49,7 +49,7 @@ const LoginScreen = ({navigation}: IProps) => {
         setUser(result);
         await messaging().deleteToken();
         const newToken = await messaging().getToken();
-        setFcmToken(newToken);
+        setFcmToken([newToken]);
         if (result && newToken) {
           console.log('Sending FCM token to server:', newToken);
           fetch(`http://10.0.2.2:3001/user/${result._id}/fcm-token`, {
@@ -100,14 +100,16 @@ const LoginScreen = ({navigation}: IProps) => {
       />
 
       <TouchableOpacity style={styles.registerButton} onPress={handleLogin}>
-        <Text style={[styles.registerText]} className="text-lg">Login</Text>
+        <Text style={[styles.registerText]} className="text-lg">
+          Login
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('RegistrationForm')}>
         <Text className="text-center mt-0">
           Don't have an account?{' '}
           <Text
-          className="color-[#007AFF] underline"
+            className="color-[#007AFF] underline"
             onPress={() => navigation.navigate('RegistrationForm')}>
             Register
           </Text>

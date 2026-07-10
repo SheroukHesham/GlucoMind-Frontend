@@ -80,7 +80,7 @@ const GlucoseReading = ({glucoseReading, trend}: IProps) => {
         ? renderTriangle(getBorderColor(glucoseReading))
         : renderTriangle(getBorderColor(70))}
 
-      <CGMLineChart user={user} />
+      {user && <CGMLineChart user={user} />}
       <CGMReportPDF cgmData={weekData} />
     </View>
   );
