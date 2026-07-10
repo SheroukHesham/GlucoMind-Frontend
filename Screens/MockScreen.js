@@ -1,56 +1,25 @@
-import React from 'react';
-import CGMLineChart from '../Components/CGMLineChart';
-import CGMReportPDF from '../Components/PDFGenerator';
+import React, {useEffect, useState} from 'react';
+import CGMLineChart from '../components/CGMLineChart';
+import CGMReportPDF from '../components/PDFGenerator';
+import {useUser} from '../contexts/userContext';
 
 const MockScreen = () => {
-  const generateMockCGMData = () => {
-    const data = [];
-    const now = new Date();
+  const {user} = useUser();
+  const [weekdata, setWeekdata] = useState([]);
 
-    for (let i = 23; i >= 0; i--) {
-      const time = new Date(now);
-      time.setHours(now.getHours() - i);
-      time.setMinutes(0, 0, 0);
-
-      data.push({
-        timestamp: time.toISOString(),
-        glucose: Math.floor(80 + Math.random() * 60), // realistic range: 80–140 mg/dL
-      });
+  useEffect(() => {
+    if (!user || !user._id) {
+      return;
     }
-
-    return data;
-  };
-
-  const generateMockWeeklyCGMData = () => {
-    const now = new Date();
-    const days = 7;
-    const readingsPerDay = 4;
-    const data = [];
-
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date(now);
-      date.setDate(now.getDate() - i);
-
-      for (let j = 0; j < readingsPerDay; j++) {
-        const readingTime = new Date(date);
-        readingTime.setHours(6 + j * 6); // 6AM, 12PM, 6PM, 12AM
-        data.push({
-          timestamp: readingTime.toISOString(),
-          glucose: Math.floor(Math.random() * 160) + 60, // range: 60–220
-        });
-      }
-    }
-
-    return data;
-  };
-
-  // Example usage:
-  const cgmData = generateMockCGMData();
-  const weekdata = generateMockWeeklyCGMData();
+    fetch(`http://localhost:3000/cgm/last7d/${user._id}`)
+      .then(res => res.json())
+      .then(data => setWeekdata(data.readings || []))
+      .catch(err => console.error('Error fetching weekly CGM data:', err));
+  }, [user]);
 
   return (
     <>
-      <CGMLineChart cgmData={cgmData} timeRange={'day'} />
+      <CGMLineChart user={user} />
       <CGMReportPDF cgmData={weekdata} />
     </>
   );

@@ -8,7 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import styles from '../Styles/MealPageStyle';
-import Header from '../Components/Header';
+import Header from '../components/Header';
 
 const MealDetailsScreen = ({route, navigation}) => {
   const {meal, user} = route.params;
@@ -52,7 +52,7 @@ const MealDetailsScreen = ({route, navigation}) => {
           {instructionSteps.length > 0 ? (
             instructionSteps.map((step, index) => (
               <Text key={index} style={styles.text}>
-                {index + 1}. {step}.
+                {step}.
               </Text>
             ))
           ) : (

@@ -1,22 +1,36 @@
-/* eslint-disable react-native/no-inline-styles */
 import React, {useState, useRef, useEffect} from 'react';
-import {View, Text, StyleSheet, FlatList, TouchableOpacity} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  ListRenderItem,
+} from 'react-native';
 import {useUser} from '../contexts/userContext';
 import styles from '../Styles/HomeMedicationCard';
+import {DrawerNavigationProp} from '@react-navigation/drawer';
+import {ParamListBase} from '@react-navigation/native';
+
+interface IProps {
+  showButton: boolean;
+  setEdit?: (arg: boolean) => void;
+  medications: [{name: string; time: string}] | [];
+  navigation: DrawerNavigationProp<ParamListBase, string, undefined>;
+}
 
 const MedicationIntake = ({
   showButton,
-  edit,
   setEdit,
   medications,
   navigation,
-}) => {
+}: IProps) => {
   const {user} = useUser();
-  const [takenMeds, setTakenMeds] = useState([]);
-  const prevTakenRef = useRef([]);
+  const [takenMeds, setTakenMeds] = useState<string[]>([]);
+  const prevTakenRef = useRef<string[]>([]);
   const MEDICATIONS = medications;
 
-  const toggleTaken = medName => {
+  const toggleTaken = (medName: string) => {
     setTakenMeds(prev =>
       prev.includes(medName)
         ? prev.filter(name => name !== medName)
@@ -54,13 +68,18 @@ const MedicationIntake = ({
 
   const handleEdit = () => {
     // TODO: set the boolean to true to show the edit view
-    setEdit(true);
+    if (setEdit) {
+      setEdit(true);
+    }
     // TODO: Trigger backend logic or script
 
     console.log('Editing');
   };
 
-  const renderMedCard = ({item}) => {
+  const renderMedCard: ListRenderItem<{
+    name: string;
+    time: string;
+  }> = ({item}) => {
     const isTaken = takenMeds.includes(item.name);
 
     return (
@@ -68,7 +87,8 @@ const MedicationIntake = ({
         <View style={styles.cardHeader}>
           <Text style={styles.medicationName}>{item.name}</Text>
           <TouchableOpacity onPress={() => toggleTaken(item.name)}>
-            <Text style={{fontSize: 24, color: isTaken ? '#4CAF50' : '#aaa'}}>
+            <Text
+              className={`text-2xl ${isTaken ? 'color-[#4CAF50] ' : 'color-[#aaa]'}`}>
               {isTaken ? '☑️' : '⬜️'}
             </Text>
           </TouchableOpacity>
@@ -94,7 +114,7 @@ const MedicationIntake = ({
         data={MEDICATIONS}
         keyExtractor={item => item.name}
         renderItem={renderMedCard}
-        contentContainerStyle={{paddingBottom: 20}}
+        contentContainerStyle={localStyles.contentContainerStyle}
       />
       {/* Add an optional edit button */}
       {showButton && (
@@ -124,6 +144,9 @@ const localStyles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  contentContainerStyle: {
+    paddingBottom: 20,
   },
 });
 

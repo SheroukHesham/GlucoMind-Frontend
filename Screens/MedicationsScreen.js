@@ -1,10 +1,10 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, {useState} from 'react';
 import {ScrollView, View} from 'react-native';
-import MedicationIntake from '../Components/MedicationIntake';
-import Header from '../Components/Header';
+import MedicationIntake from '../components/MedicationIntake';
+import Header from '../components/Header';
 import styles from '../Styles/HomeStylesheet';
-import MedicationSection from '../Components/EditMedicationSection';
+import MedicationSection from '../components/EditMedicationSection';
 import {useUser} from '../contexts/userContext';
 
 const MedicationsScreen = ({navigation, route}) => {

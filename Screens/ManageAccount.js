@@ -8,10 +8,10 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import Header from '../Components/Header';
-import EmergencyContacts from '../Components/EmergencyContacts';
+import Header from '../components/Header';
+import EmergencyContacts from '../components/EmergencyContacts';
 import styles from '../Styles/ManageAccountStyle';
-import MealTags from '../Components/MealTags';
+import MealTags from '../components/MealTags';
 import {useUser} from '../contexts/userContext';
 
 const ManageAccountScreen = ({navigation, route}) => {

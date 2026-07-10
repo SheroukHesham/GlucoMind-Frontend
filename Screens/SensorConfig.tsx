@@ -10,10 +10,11 @@ import {
 } from 'react-native';
 import styles from '../Styles/HomeStylesheet';
 import {ScrollView} from 'react-native-gesture-handler';
-import Header from '../Components/Header';
+import Header from '../components/Header';
 import {useUser} from '../contexts/userContext';
+import {INavigation} from '../interfaces';
 
-const ConfigureSensorScreen = ({navigation, route}) => {
+const ConfigureSensorScreen = ({navigation}: INavigation) => {
   const {user} = useUser();
   const [sensorId, setSensorId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,9 +26,9 @@ const ConfigureSensorScreen = ({navigation, route}) => {
     }
     setLoading(true);
     try {
-      // Replace with your backend endpoint
+      console.log('Connecting to sensor with ID:', user?._id);
       const response = await fetch(
-        `http://10.0.2.2:3000/cgm/add-sensor/${user._id}`,
+        `http://10.0.2.2:3000/cgm/add-sensor/${user?._id}`,
         {
           method: 'POST',
           headers: {

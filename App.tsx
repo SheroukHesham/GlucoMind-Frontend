@@ -6,13 +6,9 @@
  */
 
 import React, {useEffect} from 'react';
+import './global.css';
 import messaging from '@react-native-firebase/messaging';
 import {Alert} from 'react-native';
-
-import {SafeAreaView} from 'react-native';
-import RegistrationForm from './Screens/RegistrationForm';
-// import HomePage from './Pages/HomePage';
-import NewHome from './Screens/NewHome';
 import {NavigationContainer} from '@react-navigation/native';
 import MainNavigation from './navigation/MainNavigation';
 import {UserProvider} from './contexts/userContext';
@@ -21,7 +17,11 @@ const App = () => {
   useEffect(() => {
     // Listen for foreground messages
     const unsubscribe = messaging().onMessage(async remoteMessage => {
-      Alert.alert('Medication Reminder', remoteMessage.notification.body);
+      const message = remoteMessage?.notification?.body || '';
+      const title = message.toLowerCase().includes('glucose')
+        ? 'Glucose Level Alert'
+        : 'Medication Reminder';
+      Alert.alert(title, message);
     });
     return unsubscribe;
   }, []);
@@ -31,13 +31,13 @@ const App = () => {
     messaging().requestPermission();
     messaging()
       .getToken()
-      .then(token => {
+      .then((token: string) => {
         // Send token to backend and store with user
+        console.log(token);
       });
   }, []);
 
   return (
-    // <RegistrationForm />
     <UserProvider>
       <NavigationContainer>
         <MainNavigation />

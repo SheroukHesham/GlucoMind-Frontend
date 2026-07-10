@@ -1,7 +1,7 @@
 import React from 'react';
 import {ScrollView} from 'react-native';
-import MealPlan from '../Components/MealPlan';
-import Header from '../Components/Header';
+import MealPlan from '../components/MealPlan';
+import Header from '../components/Header';
 import styles from '../Styles/HomeStylesheet';
 import {useUser} from '../contexts/userContext';
 
